@@ -11,7 +11,7 @@ class CharConverter {
     }
 
     loadMappingData(option) {
-        const url = `https://yukiyuqichen.github.io/CHAR/char_converter/data/${option}.json`; // Replace with your GitHub JSON URL
+        const url = `https://roshioleo.github.io/CHAR/char_converter/data/${option}.json`; // Replace with your GitHub JSON URL
         return fetch(url)
             .then(response => {
                 if (!response.ok) {
