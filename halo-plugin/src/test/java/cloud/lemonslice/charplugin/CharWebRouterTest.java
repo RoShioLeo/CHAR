@@ -23,6 +23,9 @@ class CharWebRouterTest {
         client.get().uri("/tools/char/styles.css").exchange().expectStatus().isOk().expectHeader().contentType("text/css");
         client.get().uri("/tools/char/char_converter/data/v2s.json").exchange().expectStatus().isOk().expectBody().jsonPath("$.圑[0]").isEqualTo("团");
         client.get().uri("/tools/char/NOTICE.md").exchange().expectStatus().isOk();
+        client.get().uri("/tools/char/LICENSES.md").exchange().expectStatus().isOk()
+            .expectHeader().contentType("text/plain;charset=UTF-8").expectBody(String.class)
+            .value(body -> org.junit.jupiter.api.Assertions.assertTrue(body.contains("许可范围")));
         client.get().uri("/tools/char/data/fork-overrides.json").exchange().expectStatus().isNotFound();
         client.get().uri("/tools/char/.git/config").exchange().expectStatus().isNotFound();
     }

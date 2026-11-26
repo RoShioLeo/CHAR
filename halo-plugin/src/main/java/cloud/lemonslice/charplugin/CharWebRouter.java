@@ -3,6 +3,7 @@ package cloud.lemonslice.charplugin;
 
 import java.util.Set;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.CacheControl;
@@ -42,6 +43,7 @@ public class CharWebRouter {
         MediaType type = name.endsWith(".html") ? MediaType.TEXT_HTML : name.endsWith(".css")
             ? MediaType.valueOf("text/css") : name.endsWith(".js") ? MediaType.valueOf("text/javascript")
             : name.endsWith(".svg") ? MediaType.valueOf("image/svg+xml") : MediaType.TEXT_PLAIN;
+        if (type.equals(MediaType.TEXT_PLAIN)) type = new MediaType("text", "plain", StandardCharsets.UTF_8);
         return ServerResponse.ok().contentType(type).cacheControl(CacheControl.noCache())
             .header("X-Content-Type-Options", "nosniff")
             .body(BodyInserters.fromResource(new ClassPathResource("web/" + name, CharWebRouter.class.getClassLoader())));
