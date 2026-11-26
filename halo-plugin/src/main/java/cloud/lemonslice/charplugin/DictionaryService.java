@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 package cloud.lemonslice.charplugin;
 
 import com.fasterxml.jackson.core.type.TypeReference;

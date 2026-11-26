@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Halo console integration; administrative access is checked again by the server.
 import { definePlugin } from '@halo-dev/ui-shared';
 import { IconCharacterRecognition } from '@halo-dev/components';

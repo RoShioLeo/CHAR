@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FILES = (
     'index.html', 'styles.css', 'charConverter.js', 'app.js', 'appearance.js',
     'img/lemon.svg', 'char_converter/data/v2s.json', 'char_converter/data/v2t.json',
-    'LICENSE', 'NOTICE.md',
+    'LICENSE', 'LICENSE-MIT', 'LICENSES.md', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md',
 )
 
 if __name__ == '__main__':

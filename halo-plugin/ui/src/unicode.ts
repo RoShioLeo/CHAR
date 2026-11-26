@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export function unicodeInput(input: string): string {
     const value = input.trim();
     const prefixed = /^(?:U\+|0x)([0-9a-f]{1,6})$/i.exec(value);

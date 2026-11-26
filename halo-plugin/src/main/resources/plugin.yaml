@@ -15,7 +15,7 @@ spec:
   displayName: 字形转换
   description: CHAR 字形转换与超级管理员字库管理
   license:
-    - name: GPL-3.0
-      url: https://www.gnu.org/licenses/gpl-3.0.html
+    - name: MIT
+      url: https://opensource.org/license/mit
     - name: CC-BY-SA-4.0 (CHAR)
       url: https://creativecommons.org/licenses/by-sa/4.0/

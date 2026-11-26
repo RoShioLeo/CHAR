@@ -18,7 +18,7 @@ tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.
 test { useJUnitPlatform() }
 tasks.named('processResources') {
     from('..') {
-        include 'index.html', 'styles.css', 'app.js', 'appearance.js', 'charConverter.js', 'img/lemon.svg', 'LICENSE', 'NOTICE.md'
+        include 'index.html', 'styles.css', 'app.js', 'appearance.js', 'charConverter.js', 'img/lemon.svg', 'LICENSE', 'LICENSE-MIT', 'LICENSES.md', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md'
         filteringCharset = 'UTF-8'
         filesMatching('index.html') {
             filter { line -> line == '<head>' ? line + '\n    <base href="/tools/char/">' : line }
@@ -39,6 +39,8 @@ tasks.named('jar') {
     from('LICENSE') { into 'META-INF' }
     from('../LICENSE') { into 'META-INF'; rename { 'CHAR-LICENSE' } }
     from('../NOTICE.md') { into 'META-INF' }
+    from('../LICENSES.md') { into 'META-INF' }
+    from('../THIRD_PARTY_NOTICES.md') { into 'META-INF' }
 }
 tasks.named('generatePluginComponentsIdx') {
     notCompatibleWithConfigurationCache('Plugin component indexing uses Task.project.')

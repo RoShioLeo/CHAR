@@ -77,5 +77,6 @@ node --experimental-strip-types --test test/*.test.cjs
 原 CHAR 项目由 **Yuqi Chen** 开发，贡献者包括 **Hongsu Wang、Yiyi Wang、Fengyi Ji、Kaini Xiong**。数据来源包括 [CBDB](https://projects.iq.harvard.edu/cbdb)、[OpenCC](https://github.com/BYVoid/OpenCC)、[异体字字典](https://dict.variants.moe.edu.tw/)及《通用规范汉字表》，详见上游项目。
 
 - CHAR 字库及转换器保留 [CC BY-SA 4.0](LICENSE)。
-- 独立 Halo 集成代码采用 [GPL-3.0](halo-plugin/LICENSE)。
-- 安装包同时包含两份许可与 [署名说明](NOTICE.md)。
+- 独立编写的 Halo 集成和新增前台 UI 采用 [MIT](LICENSE-MIT)，保留版权与许可声明。
+- Halo 运行环境和宿主 UI 组件保留其 GPL-3.0 等原有许可；MIT 声明不免除组合分发时的第三方义务。
+- 安装包包含两份许可、[许可范围](LICENSES.md)、[署名说明](NOTICE.md)和 [第三方声明](THIRD_PARTY_NOTICES.md)。CHAR 的 CC BY-SA 4.0 仍包含相同方式共享要求，整个项目不宣称仅需署名。

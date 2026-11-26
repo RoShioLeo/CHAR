@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 package cloud.lemonslice.charplugin;
 
 import java.util.Set;
@@ -19,7 +20,7 @@ public class CharWebRouter {
     private final DictionaryService service;
     private final SuperAdminGuard guard;
     public CharWebRouter(DictionaryService service, SuperAdminGuard guard) { this.service = service; this.guard = guard; }
-    private static final Set<String> FILES = Set.of("index.html", "styles.css", "app.js", "appearance.js", "charConverter.js", "img/lemon.svg", "LICENSE", "NOTICE.md");
+    private static final Set<String> FILES = Set.of("index.html", "styles.css", "app.js", "appearance.js", "charConverter.js", "img/lemon.svg", "LICENSE", "LICENSE-MIT", "LICENSES.md", "NOTICE.md", "THIRD_PARTY_NOTICES.md");
 
     @Bean
     public RouterFunction<ServerResponse> charPublicRoutes() {

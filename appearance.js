@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 (() => {
     const key = 'lemonslice-color-mode';
     const media = window.matchMedia('(prefers-color-scheme: dark)');

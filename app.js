@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 const converters = new Map();
 const element = id => document.getElementById(id);
 const status = (message, error = false) => {

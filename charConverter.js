@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Derived from yukiyuqichen/CHAR; see LICENSE and NOTICE.md.
 class CharConverter {
     constructor(option) {
         if (option !== 'v2s' && option !== 'v2t') {
