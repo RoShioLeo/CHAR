@@ -131,6 +131,7 @@ async function download(kind) {
 const formatCandidates = values => values?.length ? values.join(' / ') : '保持原字';
 const formatTime = value => value ? new Date(value).toLocaleString('zh-CN') : '初始修正';
 function openPublic() { window.open('/tools/char/', '_blank', 'noopener,noreferrer'); }
+function submitEditor() { document.getElementById('char-edit-form')?.requestSubmit(); }
 </script>
 
 <template>
@@ -203,13 +204,19 @@ function openPublic() { window.open('/tools/char/', '_blank', 'noopener,noreferr
             </div>
         </VCard>
         <VModal :visible="editorVisible" :title="edit.existing ? '编辑映射' : '新增映射'" :width="560" @close="editorVisible = false">
-            <FormKit type="form" submit-label="保存" :disabled="saving" @submit="save">
+            <FormKit id="char-edit-form" type="form" :actions="false" :disabled="saving" @submit="save">
                 <FormKit v-model="edit.character" type="text" label="原字" validation="required" :disabled="edit.existing" :help="edit.existing ? undefined : '支持字形、U+4E00、0x4E00、4E00'" />
                 <div v-if="!edit.existing && characterPreview" class="edit-preview"><span class="glyph"><span class="character">{{ characterPreview }}</span><small>{{ unicodeCodes(characterPreview) }}</small></span></div>
                 <FormKit v-model="edit.candidates" type="textarea" label="候选字" help="每行一个候选，支持字形或十六进制 Unicode 码。" validation="required" :rows="5" />
                 <div class="edit-preview"><template v-for="(candidate, index) in candidatePreview" :key="index"><span v-if="!candidate.error" class="glyph"><span class="character">{{ candidate.character }}</span><small>{{ candidate.code }}</small></span><span v-else role="alert">{{ candidate.error }}</span></template></div>
                 <FormKit v-model="edit.note" type="textarea" label="备注" :maxlength="300" :rows="2" />
             </FormKit>
+            <template #footer>
+                <div class="editor-actions">
+                    <VButton :disabled="saving" @click="editorVisible = false">取消</VButton>
+                    <VButton type="primary" :loading="saving" @click="submitEditor">保存</VButton>
+                </div>
+            </template>
         </VModal>
         <VModal :visible="historyVisible" title="修改记录" :width="900" @close="historyVisible = false">
             <VEmpty v-if="!history.length" title="还没有后台修改记录" />
@@ -253,6 +260,7 @@ td small { display: block; font-size: 10px; opacity: .6; }
 .note { min-width: 120px; max-width: 240px; overflow-wrap: anywhere; }
 .pagination { display: flex; align-items: center; justify-content: end; flex-wrap: wrap; gap: 12px; padding: 16px 8px 0; font-size: 13px; }
 .history { max-height: 60vh; }
+.editor-actions { display: flex; justify-content: end; gap: 8px; }
 @media (max-width: 900px) { .filters { grid-template-columns: 1fr 1fr; } .search-field { grid-column: 1 / -1; } .filter-actions { grid-column: 1 / -1; justify-content: end; } }
 @container (max-width: 900px) { .filters { grid-template-columns: 1fr 1fr; } .search-field { grid-column: 1 / -1; } .filter-actions { grid-column: 1 / -1; justify-content: end; } }
 @media (max-width: 700px) { .dictionary-page { padding: 8px; } }
