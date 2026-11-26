@@ -55,6 +55,7 @@ public class DictionaryService {
                         String note, String updatedBy, String updatedAt) {}
     public record State(Map<String, Entry> entries, List<Audit> history) {}
     public record ChangeRequest(String character, String action, List<String> candidates, String note, Long version) {}
+    public record BatchDisableRequest(List<String> characters, String note, Long version) {}
     public record Saved(Long version) {}
     public record Row(String character, List<String> candidates, List<String> baseCandidates,
                       String source, String note, String updatedBy, String updatedAt) {}
@@ -146,21 +147,49 @@ public class DictionaryService {
 
     private Mono<Saved> changeNormalized(String option, ChangeRequest request, String actor) {
         validate(request);
+        return changeMany(option, List.of(request), actor);
+    }
+
+    public Mono<Saved> disableBatch(String option, BatchDisableRequest request, String actor) {
+        if (request.characters() == null || request.characters().isEmpty() || request.characters().size() > 1000) {
+            throw badRequest("请选择需要停用的映射，每次最多 1000 项");
+        }
+        var changes = request.characters().stream().map(DictionaryService::unicodeInput).distinct()
+            .map(character -> new ChangeRequest(character, "disable", null, request.note(), request.version())).toList();
+        changes.forEach(DictionaryService::validate);
+        return changeMany(option, changes, actor);
+    }
+
+    private Mono<Saved> changeMany(String option, List<ChangeRequest> requests, String actor) {
+        Long expectedVersion = requests.getFirst().version();
         return snapshot(option).flatMap(snapshot -> {
-            if (!Objects.equals(request.version(), snapshot.config().getMetadata().getVersion())) {
+            if (!Objects.equals(expectedVersion, snapshot.config().getMetadata().getVersion())) {
                 return Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, "字库已被修改，请刷新后重新确认"));
             }
             var entries = new LinkedHashMap<>(snapshot.state().entries());
             var history = new ArrayList<>(snapshot.state().history());
-            String character = request.character();
-            var before = effective(option, snapshot.state()).get(character);
+            var before = effective(option, snapshot.state());
             String now = Instant.now().toString();
-            String note = request.note() == null ? "" : request.note().trim();
-            if ("reset".equals(request.action())) entries.remove(character);
-            else entries.put(character, new Entry("disable".equals(request.action()) ? null : request.candidates().stream().map(String::trim).distinct().toList(),
-                "disable".equals(request.action()), note, actor, now));
+            for (var request : requests) {
+                String character = request.character();
+                Entry previous = entries.get(character);
+                String note = request.note() == null ? "" : request.note().trim();
+                List<String> after;
+                if ("reset".equals(request.action())) {
+                    entries.remove(character);
+                    after = bases.get(option).get(character);
+                } else if ("disable".equals(request.action())) {
+                    if (note.isEmpty() && previous != null) note = previous.note();
+                    var retained = previous == null ? before.get(character) : previous.candidates();
+                    entries.put(character, new Entry(retained, true, note, actor, now));
+                    after = null;
+                } else {
+                    after = request.candidates().stream().map(String::trim).distinct().toList();
+                    entries.put(character, new Entry(after, false, note, actor, now));
+                }
+                history.add(new Audit(character, request.action(), before.get(character), after, note, actor, now));
+            }
             var next = new State(entries, history);
-            history.add(new Audit(character, request.action(), before, effective(option, next).get(character), note, actor, now));
             var config = new ConfigMap();
             var metadata = new Metadata();
             BeanUtils.copyProperties(snapshot.config().getMetadata(), metadata);
@@ -170,7 +199,7 @@ public class DictionaryService {
             var saved = config.getMetadata().getVersion() == null ? client.create(config) : client.update(config);
             return saved.map(value -> new Saved(value.getMetadata().getVersion()))
                 .onErrorResume(error -> client.fetch(ConfigMap.class, config.getMetadata().getName())
-                    .flatMap(current -> !Objects.equals(current.getMetadata().getVersion(), request.version())
+                    .flatMap(current -> !Objects.equals(current.getMetadata().getVersion(), expectedVersion)
                         ? Mono.<Saved>error(new ResponseStatusException(HttpStatus.CONFLICT, "字库已被修改，请刷新后重新确认", error))
                         : Mono.<Saved>error(error))
                     .switchIfEmpty(Mono.error(error)));

@@ -2,7 +2,7 @@
 
 正式网页：https://www.lemonslice.cloud/tools/char/
 
-Halo 插件标识：`lemonslice-char`，模块位于 `halo-plugin/`，初始版本 1.0.0。插件直接提供前台路由，后台「工具 → 字库管理」提供检索、新增、编辑、停用、恢复、导出和修改记录。管理 API 额外校验当前用户实际具有 `super-role`。
+Halo 插件标识：`lemonslice-char`，模块位于 `halo-plugin/`，初始版本 1.0.0。插件直接提供前台路由，后台「工具 → 字库管理」提供检索、新增、编辑、多选停用、恢复、导出和修改记录。管理 API 额外校验当前用户实际具有 `super-role`。批量停用一次写入、统一校验版本，并保留原有候选与备注。
 
 ## 2026-11-26 同步
 

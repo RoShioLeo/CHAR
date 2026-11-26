@@ -21,6 +21,7 @@ class EndpointSecurityTest {
             client.get().uri(path).exchange().expectStatus().isForbidden();
         }
         client.put().uri("/dictionaries/v2s/entries").contentType(MediaType.APPLICATION_JSON).bodyValue("{}").exchange().expectStatus().isForbidden();
+        client.put().uri("/dictionaries/v2s/batch-disable").contentType(MediaType.APPLICATION_JSON).bodyValue("{}").exchange().expectStatus().isForbidden();
         verifyNoInteractions(service);
     }
 }

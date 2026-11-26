@@ -121,4 +121,22 @@ class DictionaryServiceTest {
             assertEquals(400, assertThrows(ResponseStatusException.class, () -> DictionaryService.unicodeInput(invalid)).getStatusCode().value());
         }
     }
+
+    @Test
+    void batchDisableIsAtomicAndPreservesPreviousCorrections() {
+        service.disableBatch("v2s", new DictionaryService.BatchDisableRequest(List.of("圑", "崗"), "", null), "owner").block();
+        var mapping = service.dictionary("v2s").block();
+        assertFalse(mapping.containsKey("圑"));
+        assertFalse(mapping.containsKey("崗"));
+        assertEquals(0L, service.list("v2s", "", "all", 1, 50).block().version());
+        assertEquals(2, service.history("v2s").block().size());
+        assertEquals(List.of("团"), service.overrides("v2s").block().entries().get("圑").candidates());
+        assertEquals("已保留的字形修正", service.overrides("v2s").block().entries().get("圑").note());
+        assertEquals(400, assertThrows(ResponseStatusException.class, () -> service.disableBatch("v2s",
+            new DictionaryService.BatchDisableRequest(List.of("U+20000", "U+110000"), "", 0L), "owner").block()).getStatusCode().value());
+        assertFalse(service.overrides("v2s").block().entries().containsKey("𠀀"));
+        assertEquals(409, assertThrows(ResponseStatusException.class, () -> service.disableBatch("v2s",
+            new DictionaryService.BatchDisableRequest(List.of("鹹"), "", null), "owner").block()).getStatusCode().value());
+        assertEquals(List.of("咸"), service.dictionary("v2s").block().get("鹹"));
+    }
 }

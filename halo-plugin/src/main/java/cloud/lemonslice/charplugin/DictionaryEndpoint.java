@@ -31,6 +31,9 @@ public class DictionaryEndpoint implements CustomEndpoint {
             .PUT("/dictionaries/{option}/entries", request -> guard.requireSuperAdmin().flatMap(actor ->
                 request.bodyToMono(DictionaryService.ChangeRequest.class).flatMap(body -> service.change(request.pathVariable("option"), body, actor)))
                 .flatMap(value -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(value)))
+            .PUT("/dictionaries/{option}/batch-disable", request -> guard.requireSuperAdmin().flatMap(actor ->
+                request.bodyToMono(DictionaryService.BatchDisableRequest.class).flatMap(body -> service.disableBatch(request.pathVariable("option"), body, actor)))
+                .flatMap(value -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(value)))
             .GET("/dictionaries/{option}/history", request -> guard.requireSuperAdmin().flatMap(actor -> service.history(request.pathVariable("option")))
                 .flatMap(value -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(value)))
             .GET("/dictionaries/{option}/export", request -> guard.requireSuperAdmin().flatMap(actor ->

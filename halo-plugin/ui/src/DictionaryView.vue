@@ -12,6 +12,9 @@ const page = ref(1);
 const result = ref({items: [], total: 0, version: null, effectiveCount: 0, changedCount: 0});
 const loading = ref(false);
 const saving = ref(false);
+const selected = ref([]);
+const selectable = computed(() => result.value.items.filter(row => row.source !== 'disabled'));
+const allSelected = computed(() => selectable.value.length > 0 && selectable.value.every(row => selected.value.includes(row.character)));
 const error = ref('');
 const editorVisible = ref(false);
 const historyVisible = ref(false);
@@ -46,7 +49,7 @@ async function load() {
     try {
         const params = new URLSearchParams({query: unicodeInput(query.value), source: source.value, page: String(page.value), size: '50'});
         const data = await request(`${api}/${option.value}?${params}`);
-        if (ticket === sequence) result.value = data;
+        if (ticket === sequence) { result.value = data; selected.value = []; }
     } catch (failure) { if (ticket === sequence) error.value = failure.message; }
     finally { if (ticket === sequence) loading.value = false; }
 }
@@ -54,6 +57,27 @@ async function load() {
 watch([option, source], () => { page.value = 1; editorVisible.value = false; load(); });
 onMounted(load);
 function search() { page.value = 1; load(); }
+function toggleAll() { selected.value = allSelected.value ? [] : selectable.value.map(row => row.character); }
+function disableSelected() {
+    if (!selected.value.length || saving.value) return;
+    const characters = [...selected.value];
+    const selectedOption = option.value;
+    const version = result.value.version ?? null;
+    Dialog.warning({
+        title: `停用${selectedOption === 'v2s' ? '简体' : '繁体'}字库中选中的 ${characters.length} 项映射？`,
+        description: `原字：${characters.slice(0, 12).join('、')}${characters.length > 12 ? '…' : ''}。转换时将保留原字。`,
+        confirmText: '停用', cancelText: '取消', showCancel: true,
+        onConfirm: async () => {
+            saving.value = true;
+            try {
+                await request(`${api}/${selectedOption}/batch-disable`, {method: 'PUT', body: JSON.stringify({characters, version, note: ''})});
+                Toast.success(`已停用 ${characters.length} 项映射`);
+                await load();
+            } catch (failure) { Toast.error(failure.message); }
+            finally { saving.value = false; }
+        }
+    });
+}
 function openEditor(row) {
     Object.assign(edit, {character: row?.character || '', candidates: (row?.candidates || []).join('\n'),
         note: row?.note || '', existing: !!row, version: result.value.version ?? null, option: option.value});
@@ -143,14 +167,22 @@ function openPublic() { window.open('/tools/char/', '_blank', 'noopener,noreferr
         </VCard>
         <VCard v-if="error"><p role="alert">{{ error }}</p><VButton @click="load">重新加载</VButton></VCard>
         <VCard v-else>
-            <div class="summary">有效映射 {{ result.effectiveCount }} 项 · 自定义修正 {{ result.changedCount }} 项</div>
+            <div class="list-toolbar">
+                <div class="summary">有效映射 {{ result.effectiveCount }} 项 · 自定义修正 {{ result.changedCount }} 项</div>
+                <div class="actions">
+                    <span v-if="selected.length" class="selection-count">已选 {{ selected.length }} 项</span>
+                    <VButton :disabled="!selected.length || loading || saving" :loading="saving" @click="disableSelected">批量停用</VButton>
+                    <VButton v-if="selected.length" :disabled="saving" @click="selected = []">取消选择</VButton>
+                </div>
+            </div>
             <VLoading v-if="loading" />
             <VEmpty v-else-if="!result.items.length" title="没有匹配的字形" />
             <div v-else class="table-wrap">
                 <table>
-                    <thead><tr><th>原字</th><th>当前候选</th><th>来源</th><th>备注</th><th>操作</th></tr></thead>
+                    <thead><tr><th class="selection-cell"><input type="checkbox" aria-label="全选当前页可停用映射" :checked="allSelected" :indeterminate="selected.length > 0 && !allSelected" :disabled="!selectable.length || saving" @change="toggleAll"></th><th>原字</th><th>当前候选</th><th>来源</th><th>备注</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="row in result.items" :key="row.character">
+                            <td class="selection-cell"><input v-model="selected" type="checkbox" :value="row.character" :aria-label="`选择原字 ${row.character}`" :disabled="row.source === 'disabled' || saving"></td>
                             <td><span class="glyph"><span class="character">{{ row.character }}</span><small>{{ unicodeCodes(row.character) }}</small></span></td>
                             <td><div class="glyph-list"><span v-for="(candidate, index) in (row.candidates?.length ? row.candidates : [row.character])" :key="index" class="glyph"><span class="character">{{ candidate }}</span><small>{{ unicodeCodes(candidate) }}</small></span></div></td>
                             <td>{{ row.source === 'base' ? '基础字库' : row.source === 'disabled' ? '保持原字' : '自定义修正' }}</td>
@@ -203,7 +235,11 @@ function openPublic() { window.open('/tools/char/', '_blank', 'noopener,noreferr
 .filter-field > label { font-size: 13px; }
 .filter-field :deep(.char-filter-control) { margin: 0 !important; }
 .filter-actions { display: flex; align-items: center; gap: 16px; }
-.summary { padding: 8px 12px 16px; font-size: 13px; opacity: .7; }
+.list-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 8px 12px 16px; }
+.summary, .selection-count { font-size: 13px; opacity: .7; }
+.selection-cell { width: 40px; }
+.selection-cell input { width: 16px; height: 16px; vertical-align: middle; accent-color: #292b2a; cursor: pointer; }
+.selection-cell input:disabled { cursor: default; opacity: .4; }
 .table-wrap { overflow: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 12px; border-bottom: 1px solid #94a3b830; vertical-align: middle; }
