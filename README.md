@@ -5,8 +5,8 @@
     <img src="https://img.shields.io/pypi/v/char-converter.svg" /></a>
 <a href="https://www.npmjs.com/package/char_converter">
     <img src="https://img.shields.io/npm/v/char_converter.svg" /></a>
-<a href="http://www.apache.org/licenses/">
-    <img src="https://img.shields.io/badge/License-MIT-green.svg" /></a>
+<a href="https://creativecommons.org/licenses/by-sa/4.0/">
+    <img src="https://img.shields.io/badge/License-CC%20BY--SA%204.0-green.svg" /></a>
 <a href="https://colab.research.google.com/github/yukiyuqichen/CHAR/blob/main/test/test.ipynb">
     <img src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
 </p>
@@ -24,7 +24,7 @@
 
 # Online Demo
 <p align="center">
-  <a href="https://roshioleo.github.io/CHAR/">Char Converter Demo</a>
+  <a href="https://www.lemonslice.cloud/tools/char/">字形转换</a>
 </p>
 
 <p align="center">

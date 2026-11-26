@@ -11,7 +11,7 @@ class CharConverter {
     }
 
     loadMappingData(option) {
-        const url = `https://roshioleo.github.io/CHAR/char_converter/data/${option}.json`; // Replace with your GitHub JSON URL
+        const url = `char_converter/data/${option}.json`;
         return fetch(url)
             .then(response => {
                 if (!response.ok) {
@@ -23,7 +23,7 @@ class CharConverter {
                 this.mapping = data;
             })
             .catch(error => {
-                console.error("Error loading mapping data:", error);
+                throw error;
             });
     }
 
@@ -32,7 +32,6 @@ class CharConverter {
             throw new Error("Mode must be either 'one2one' or 'one2many'.");
         }
         this.mode = mode;
-        console.log(`Conversion mode is set to '${mode}'.`);
     }
 
     convert(text) {
@@ -53,56 +52,4 @@ class CharConverter {
         }
         return convertedText.join('');
     }
-}
-
-function initializeConverter() {
-    const option = document.getElementById('optionSelect').value;
-    const mode = document.getElementById('modeSelect').value;
-    const converter = new CharConverter(option);
-    converter.setMode(mode);
-    return converter;
-}
-
-function convertFile() {
-    const converter = initializeConverter();
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-    if (!file) {
-        alert("Please select a file first.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const fileContent = event.target.result;
-        converter.loaded.then(() => {
-            const converted = converter.convert(fileContent);
-            const blob = new Blob([converted], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'converted.txt';
-            link.click();
-        });
-    };
-    reader.readAsText(file, 'UTF-8');
-}
-
-function convertText() {
-    const converter = initializeConverter();
-    const inputText = document.getElementById('inputText').value;
-    converter.loaded.then(() => {
-        const converted = converter.convert(inputText);
-        document.getElementById('outputText').value = converted;
-    });
-}
-
-function copyOutput() {
-    const outputText = document.getElementById('outputText');
-    if (!outputText.value) {
-        return;
-    }
-    navigator.clipboard.writeText(outputText.value).catch(() => {
-        outputText.select();
-        document.execCommand('copy');
-    });
 }

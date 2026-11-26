@@ -1,138 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Char Converter</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="字形转换，支持异体字转简体、繁体及文本文件转换。">
+    <title>字形转换 · 柠檬汽水池</title>
+    <link rel="icon" href="img/lemon.svg" type="image/svg+xml">
+    <script src="appearance.js"></script>
+    <link rel="stylesheet" href="styles.css">
     <script src="charConverter.js" defer></script>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 50px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        img.logo {
-            display: block;
-            margin: 0 auto 20px;
-            width: 120px; /* Increased size */
-        }
-
-        h2 {
-            margin-top: 0;
-        }
-
-        .content {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .left-section {
-            flex: 1;
-            margin-right: 20px;
-        }
-
-        .right-section {
-            flex: 1;
-        }
-
-        label,
-        select,
-        textarea,
-        button {
-            box-sizing: border-box;
-            width: 100%;
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #ADD8E6; /* Light Blue */
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #87CEEB; /* Slightly darker shade of Light Blue */
-        }
-
-        textarea#inputText {
-            margin-bottom: 20px; /* Added margin to the bottom */
-        }
-
-        input[type="file"] {
-            margin-bottom: 20px; /* Added margin to the bottom */
-        }
-
-        .button-row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .button-row button {
-            width: auto;
-            flex: 1;
-        }
-    </style>
+    <script src="app.js" defer></script>
 </head>
-
 <body>
-    <div class="container">
-        <div class="header">
-            <img src="https://raw.githubusercontent.com/yukiyuqichen/CHAR/main/img/icon.png" alt="Char Converter Logo" class="logo">
-            <h2>Char Converter</h2>
-        </div>
-        <div class="content">
-            <div class="left-section">
-                <!-- Option and Mode Selection -->
-                <h3>Settings</h3>
-                <label for="optionSelect">Option:</label>
-                <select id="optionSelect">
-                    <option value="v2s">v2s (Simplified)</option>
-                    <option value="v2t">v2t (Traditional)</option>
-                </select>
-                <label for="modeSelect">Mode:</label>
-                <select id="modeSelect">
-                    <option value="one2one">one2one</option>
-                    <option value="one2many">one2many</option>
-                </select>
-
-                <!-- For convert_file -->
-                <h3>Convert File</h3>
-                <input type="file" id="fileInput">
-                <button onclick="convertFile()">Convert and Download</button>
-            </div>
-            <div class="right-section">
-                <!-- For convert_text -->
-                <h3>Convert Text</h3>
-                <textarea id="inputText" rows="10" cols="50"></textarea>
-                <div class="button-row">
-                    <button onclick="convertText()">Convert</button>
-                    <button onclick="copyOutput()">Copy Result</button>
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <div class="shell">
+        <header class="site-nav">
+            <a class="back-blog" href="https://www.lemonslice.cloud/">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m14 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>主站</span>
+            </a>
+            <details class="appearance">
+                <summary aria-label="外观设置" title="外观设置">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" stroke-linecap="round"/></svg>
+                </summary>
+                <div class="appearance-menu" role="group" aria-label="配色模式">
+                    <button type="button" data-appearance="system">跟随系统</button>
+                    <button type="button" data-appearance="light">浅色模式</button>
+                    <button type="button" data-appearance="dark">深色模式</button>
                 </div>
-                <textarea id="outputText" rows="10" cols="50" readonly></textarea>
+            </details>
+        </header>
+        <main id="main-content">
+            <div class="brand">
+                <img src="img/lemon.svg" alt="" width="48" height="48">
+                <h1>字形转换</h1>
             </div>
-        </div>
+            <div class="controls">
+                <div class="field">
+                    <label for="optionSelect">转换目标</label>
+                    <select id="optionSelect">
+                        <option value="v2s">简体字</option>
+                        <option value="v2t">繁体字</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="modeSelect">转换方式</label>
+                    <select id="modeSelect">
+                        <option value="one2one">默认转换</option>
+                        <option value="one2many">多字候选</option>
+                    </select>
+                </div>
+                <div class="file-actions">
+                    <input type="file" id="fileInput" accept=".txt,text/plain" class="visually-hidden">
+                    <button type="button" id="chooseFile">选择文件</button>
+                    <button type="button" id="convertFile" disabled>转换并下载</button>
+                </div>
+            </div>
+            <div class="workspace">
+                <section class="text-panel">
+                    <div class="panel-heading">
+                        <label for="inputText">原文</label>
+                        <div class="panel-actions">
+                            <button type="button" id="clearText" class="quiet-button">清空</button>
+                            <button type="button" id="convertText" class="primary-button">转换</button>
+                        </div>
+                    </div>
+                    <textarea id="inputText" rows="13" spellcheck="false" placeholder="输入或粘贴文字"></textarea>
+                </section>
+                <section class="text-panel">
+                    <div class="panel-heading">
+                        <label for="outputText">转换结果</label>
+                        <button type="button" id="copyOutput" class="quiet-button" disabled>复制结果</button>
+                    </div>
+                    <textarea id="outputText" rows="13" spellcheck="false" readonly></textarea>
+                </section>
+            </div>
+            <div class="bottom-actions">
+                <p id="conversionStatus" role="status" aria-live="polite"></p>
+            </div>
+        </main>
+        <footer class="source-credit">
+            LemonSlice Edition · 基于 <a href="https://github.com/yukiyuqichen/CHAR" title="CHAR，由 Yuqi Chen 等贡献者开发" target="_blank" rel="noopener noreferrer">CHAR</a> ·
+            <a href="https://github.com/RoShioLeo/CHAR" target="_blank" rel="noopener noreferrer">源码</a> ·
+            <a href="LICENSE" rel="license">CC BY-SA 4.0</a>
+        </footer>
     </div>
 </body>
-
 </html>
