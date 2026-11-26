@@ -36,6 +36,9 @@ class CharConverter {
     }
 
     convert(text) {
+        // Normalize CJK compatibility ideographs to unified code points so the
+        // mapping needs no compatibility-code-point keys (parity with Python).
+        text = text.normalize('NFC');
         let convertedText = [];
         for (let char of text) {
             if (this.mode === 'one2one') {
@@ -90,5 +93,16 @@ function convertText() {
     converter.loaded.then(() => {
         const converted = converter.convert(inputText);
         document.getElementById('outputText').value = converted;
+    });
+}
+
+function copyOutput() {
+    const outputText = document.getElementById('outputText');
+    if (!outputText.value) {
+        return;
+    }
+    navigator.clipboard.writeText(outputText.value).catch(() => {
+        outputText.select();
+        document.execCommand('copy');
     });
 }

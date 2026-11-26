@@ -1,6 +1,6 @@
-import os
-import msgpack
-import pkg_resources
+import json
+import unicodedata
+from importlib.resources import files
 
 
 class CharConverter:
@@ -14,10 +14,10 @@ class CharConverter:
         """
         if option not in ['v2s', 'v2t']:
             raise ValueError("Option must be either 'v2s' (simplified) or 'v2t' (traditional).")
-        mapping_file_path = pkg_resources.resource_filename('char_converter', f'data/{option}.msgpack')
+        mapping_file = files('char_converter').joinpath(f'data/{option}.json')
 
-        with open(mapping_file_path, 'rb') as f:
-            self.mapping = msgpack.unpack(f, raw=False)
+        with mapping_file.open('r', encoding='utf-8') as f:
+            self.mapping = json.load(f)
         
         self.mode = 'one2one'
     
@@ -41,6 +41,10 @@ class CharConverter:
         :param text: The input text.
         :return: Converted text.
         """
+        # Normalize CJK compatibility ideographs (and other canonical
+        # equivalents) to their unified code points, so the mapping never needs
+        # compatibility-code-point keys and any such input is handled uniformly.
+        text = unicodedata.normalize('NFC', text)
         if self.mode == 'one2one':
             converted_text = [self.mapping.get(char, [char])[0] for char in text]
         elif self.mode == 'one2many':
