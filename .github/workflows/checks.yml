@@ -24,6 +24,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '12.16.1'
+          package_json_file: halo-plugin/ui/package.json
       - name: Check Python mappings
         run: python3 -m unittest discover -s test -p 'test_*.py'
       - name: Check browser mappings
