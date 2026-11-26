@@ -13,7 +13,7 @@ class CharWebRouterTest {
         var service = mock(DictionaryService.class);
         when(service.dictionary("v2s")).thenReturn(Mono.just(Map.of("圑", List.of("团"))));
         var client = WebTestClient.bindToRouterFunction(new CharWebRouter(service).charPublicRoutes()).build();
-        client.get().uri("/tools/char").exchange().expectStatus().isPermanentRedirect().expectHeader().location("/tools/char/");
+        client.get().uri("/tools/char").exchange().expectStatus().isOk().expectBody(String.class).value(body -> org.junit.jupiter.api.Assertions.assertTrue(body.contains("<base href=\"/tools/char/\">")));
         client.get().uri("/tools/char/").exchange().expectStatus().isOk().expectBody(String.class).value(body -> org.junit.jupiter.api.Assertions.assertTrue(body.contains("默认转换")));
         client.get().uri("/tools/char/styles.css").exchange().expectStatus().isOk().expectHeader().contentType("text/css");
         client.get().uri("/tools/char/char_converter/data/v2s.json").exchange().expectStatus().isOk().expectBody().jsonPath("$.圑[0]").isEqualTo("团");

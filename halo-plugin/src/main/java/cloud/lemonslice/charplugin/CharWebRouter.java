@@ -1,6 +1,5 @@
 package cloud.lemonslice.charplugin;
 
-import java.net.URI;
 import java.util.Set;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
@@ -22,7 +21,7 @@ public class CharWebRouter {
     @Bean
     public RouterFunction<ServerResponse> charPublicRoutes() {
         return RouterFunctions.route()
-            .GET("/tools/char", request -> ServerResponse.permanentRedirect(URI.create("/tools/char/")).build())
+            .GET("/tools/char", request -> file("index.html"))
             .GET("/tools/char/char_converter/data/{option}.json", request -> service.dictionary(request.pathVariable("option"))
                 .flatMap(value -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).cacheControl(CacheControl.noCache()).bodyValue(value)))
             .GET("/tools/char/", request -> file("index.html"))
