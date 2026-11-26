@@ -1,6 +1,7 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { Dialog, Toast, VButton, VCard, VEmpty, VLoading, VModal, VPageHeader } from '@halo-dev/components';
+import { unicodeInput, unicodeCodes } from './unicode';
 
 const api = '/apis/console.api.char.lemonslice.cloud/v1alpha1/dictionaries';
 const option = ref('v2s');
@@ -15,6 +16,13 @@ const editorVisible = ref(false);
 const historyVisible = ref(false);
 const history = ref([]);
 const edit = reactive({character: '', candidates: '', note: '', existing: false, version: null, option: 'v2s'});
+const candidatePreview = computed(() => edit.candidates.split('\n').filter(value => value.trim()).map(value => {
+    try { const character = unicodeInput(value); return {character, code: unicodeCodes(character)}; }
+    catch (failure) { return {error: failure.message}; }
+}));
+const characterPreview = computed(() => {
+    try { return unicodeInput(edit.character); } catch (_) { return ''; }
+});
 let sequence = 0;
 
 async function request(url, init = {}) {
@@ -35,7 +43,7 @@ async function load() {
     loading.value = true;
     error.value = '';
     try {
-        const params = new URLSearchParams({query: query.value.trim(), source: source.value, page: String(page.value), size: '50'});
+        const params = new URLSearchParams({query: unicodeInput(query.value), source: source.value, page: String(page.value), size: '50'});
         const data = await request(`${api}/${option.value}?${params}`);
         if (ticket === sequence) result.value = data;
     } catch (failure) { if (ticket === sequence) error.value = failure.message; }
@@ -97,6 +105,7 @@ async function download(kind) {
 }
 const formatCandidates = values => values?.length ? values.join(' / ') : '保持原字';
 const formatTime = value => value ? new Date(value).toLocaleString('zh-CN') : '初始修正';
+function openPublic() { window.open('/tools/char/', '_blank', 'noopener,noreferrer'); }
 </script>
 
 <template>
@@ -106,18 +115,29 @@ const formatTime = value => value ? new Date(value).toLocaleString('zh-CN') : '�
                 <VButton :disabled="loading || !!error" @click="showHistory">修改记录</VButton>
                 <VButton :disabled="loading || !!error" @click="download('overrides')">导出修正</VButton>
                 <VButton :disabled="loading || !!error" @click="download('merged')">导出字库</VButton>
-                <a href="/tools/char/" target="_blank" rel="noopener noreferrer">查看前台</a>
+                <VButton @click="openPublic">查看前台</VButton>
             </div>
         </template>
     </VPageHeader>
     <div class="dictionary-page">
         <VCard>
             <div class="filters">
-                <FormKit v-model="option" type="select" label="字库" :options="[{label: '简体字', value: 'v2s'}, {label: '繁体字', value: 'v2t'}]" />
-                <FormKit v-model="source" type="select" label="范围" :options="[{label: '全部字形', value: 'all'}, {label: '自定义修正', value: 'changed'}]" />
-                <FormKit v-model="query" type="text" label="检索" placeholder="原字、候选字或 Unicode 编码" @keyup.enter="search" />
-                <VButton :loading="loading" @click="search">查询</VButton>
-                <VButton type="primary" :disabled="loading || saving || !!error" @click="openEditor()">新增映射</VButton>
+                <div class="filter-field">
+                    <label for="char-filter-option">字库</label>
+                    <FormKit id="char-filter-option" v-model="option" type="select" outer-class="char-filter-control" :options="[{label: '简体字', value: 'v2s'}, {label: '繁体字', value: 'v2t'}]" />
+                </div>
+                <div class="filter-field">
+                    <label for="char-filter-source">范围</label>
+                    <FormKit id="char-filter-source" v-model="source" type="select" outer-class="char-filter-control" :options="[{label: '全部字形', value: 'all'}, {label: '自定义修正', value: 'changed'}]" />
+                </div>
+                <div class="filter-field search-field">
+                    <label for="char-filter-query">检索</label>
+                    <FormKit id="char-filter-query" v-model="query" type="text" outer-class="char-filter-control" :delay="0" placeholder="原字、候选字或 Unicode 编码" @keyup.enter="search" />
+                </div>
+                <div class="filter-actions">
+                    <VButton :loading="loading" @click="search">查询</VButton>
+                    <VButton type="primary" :disabled="loading || saving || !!error" @click="openEditor()">新增映射</VButton>
+                </div>
             </div>
         </VCard>
         <VCard v-if="error"><p role="alert">{{ error }}</p><VButton @click="load">重新加载</VButton></VCard>
@@ -130,8 +150,8 @@ const formatTime = value => value ? new Date(value).toLocaleString('zh-CN') : '�
                     <thead><tr><th>原字</th><th>当前候选</th><th>来源</th><th>备注</th><th>操作</th></tr></thead>
                     <tbody>
                         <tr v-for="row in result.items" :key="row.character">
-                            <td><span class="character">{{ row.character }}</span><small>U+{{ row.character.codePointAt(0).toString(16).toUpperCase() }}</small></td>
-                            <td>{{ formatCandidates(row.candidates) }}</td>
+                            <td><span class="glyph"><span class="character">{{ row.character }}</span><small>{{ unicodeCodes(row.character) }}</small></span></td>
+                            <td><div class="glyph-list"><span v-for="(candidate, index) in (row.candidates?.length ? row.candidates : [row.character])" :key="index" class="glyph"><span class="character">{{ candidate }}</span><small>{{ unicodeCodes(candidate) }}</small></span></div></td>
                             <td>{{ row.source === 'base' ? '基础字库' : row.source === 'disabled' ? '保持原字' : '自定义修正' }}</td>
                             <td class="note">{{ row.note }}</td>
                             <td><div class="actions">
@@ -151,8 +171,10 @@ const formatTime = value => value ? new Date(value).toLocaleString('zh-CN') : '�
         </VCard>
         <VModal :visible="editorVisible" :title="edit.existing ? '编辑映射' : '新增映射'" :width="560" @close="editorVisible = false">
             <FormKit type="form" submit-label="保存" :disabled="saving" @submit="save">
-                <FormKit v-model="edit.character" type="text" label="原字" validation="required" :disabled="edit.existing" />
-                <FormKit v-model="edit.candidates" type="textarea" label="候选字" help="每行一个，排在第一行的字用于默认转换。" validation="required" :rows="5" />
+                <FormKit v-model="edit.character" type="text" label="原字" validation="required" :disabled="edit.existing" :help="edit.existing ? undefined : '支持字形、U+4E00、0x4E00、4E00'" />
+                <div v-if="!edit.existing && characterPreview" class="edit-preview"><span class="glyph"><span class="character">{{ characterPreview }}</span><small>{{ unicodeCodes(characterPreview) }}</small></span></div>
+                <FormKit v-model="edit.candidates" type="textarea" label="候选字" help="每行一个候选，支持字形或十六进制 Unicode 码。" validation="required" :rows="5" />
+                <div class="edit-preview"><template v-for="(candidate, index) in candidatePreview" :key="index"><span v-if="!candidate.error" class="glyph"><span class="character">{{ candidate.character }}</span><small>{{ candidate.code }}</small></span><span v-else role="alert">{{ candidate.error }}</span></template></div>
                 <FormKit v-model="edit.note" type="textarea" label="备注" :maxlength="300" :rows="2" />
             </FormKit>
         </VModal>
@@ -173,19 +195,28 @@ const formatTime = value => value ? new Date(value).toLocaleString('zh-CN') : '�
 </template>
 
 <style scoped>
-.dictionary-page { display: grid; gap: 16px; padding: 16px; }
+.dictionary-page { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 16px; padding: 16px; container-type: inline-size; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.filters { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; padding: 8px; }
-.filters :deep(.formkit-outer) { min-width: 160px; margin-bottom: 0; }
+.filters { display: grid; grid-template-columns: minmax(140px, 200px) minmax(140px, 200px) minmax(220px, 1fr) auto; align-items: end; gap: 16px; padding: 8px; }
+.filter-field { display: grid; gap: 12px; min-width: 0; }
+.filter-field > label { font-size: 13px; }
+.filter-field :deep(.char-filter-control) { margin: 0 !important; }
+.filter-actions { display: flex; align-items: center; gap: 16px; }
 .summary { padding: 8px 12px 16px; font-size: 13px; opacity: .7; }
 .table-wrap { overflow: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 12px; border-bottom: 1px solid #94a3b830; vertical-align: middle; }
 th { white-space: nowrap; font-weight: 500; }
 td small { display: block; font-size: 10px; opacity: .6; }
-.character { font-size: 22px; }
+.character { font-size: 22px; line-height: 1.4; }
+.glyph { display: inline-flex; flex-direction: column; align-items: flex-start; }
+.glyph small { display: block; margin-top: 2px; font-size: 10px; line-height: 1.5; opacity: .6; }
+.glyph-list { display: flex; flex-wrap: wrap; align-items: start; gap: 12px 20px; }
+.edit-preview { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: -8px 0 20px; }
 .note { min-width: 120px; max-width: 240px; overflow-wrap: anywhere; }
 .pagination { display: flex; align-items: center; justify-content: end; flex-wrap: wrap; gap: 12px; padding: 16px 8px 0; font-size: 13px; }
 .history { max-height: 60vh; }
-@media (max-width: 700px) { .dictionary-page { padding: 8px; } .filters :deep(.formkit-outer) { flex: 1; min-width: 120px; } }
+@media (max-width: 900px) { .filters { grid-template-columns: 1fr 1fr; } .search-field { grid-column: 1 / -1; } .filter-actions { grid-column: 1 / -1; justify-content: end; } }
+@container (max-width: 900px) { .filters { grid-template-columns: 1fr 1fr; } .search-field { grid-column: 1 / -1; } .filter-actions { grid-column: 1 / -1; justify-content: end; } }
+@media (max-width: 700px) { .dictionary-page { padding: 8px; } }
 </style>

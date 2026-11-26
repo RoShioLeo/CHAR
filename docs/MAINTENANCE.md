@@ -15,7 +15,7 @@ Halo 插件标识：`lemonslice-char`，模块位于 `halo-plugin/`，初始版�
 ## 后续同步
 
 1. 获取上游更新并在工作分支合并。字库冲突按 JSON 键逐项比较共同基线、本分支和上游，保留 `test/fork-overrides.json` 中记录的自定义修正；如上游与这些修正冲突，先由维护者确认。
-2. 运行 `python -m unittest discover -s test -p 'test_*.py'` 和 `node --test test/browser.test.cjs`。测试覆盖所有自定义修正、两种转换方式、兼容汉字和补充平面汉字。
+2. 运行 `python -m unittest discover -s test -p 'test_*.py'` 和 `node --experimental-strip-types --test test/*.test.cjs`。测试覆盖所有自定义修正、两种转换方式、兼容汉字、补充平面汉字和 Unicode 码输入。
 3. 在 `halo-plugin` 内运行 `./gradlew build` 构建插件。运行 `./gradlew clean build` 生成正式安装包，安装包包含前台资源和基础字库。
 4. 在 Halo 安装或升级插件，验证匿名读取、超级管理员管理、普通用户拒绝访问，以及转换、文件下载、复制、移动端和明暗模式。
 
@@ -26,5 +26,7 @@ Halo 插件标识：`lemonslice-char`，模块位于 `halo-plugin/`，初始版�
 发布包内的 JSON 是基础快照；`test/fork-overrides.json` 记录已确认的修正，并在首次使用时作为初始修正。后台修改独立保存到 Halo 的 `lemonslice-char-v2s`、`lemonslice-char-v2t` ConfigMap 中，包含候选、停用状态、备注、操作人和修改记录；新版本不会重写这些对象。保存使用资源版本校验，版本变化时返回冲突，要求刷新确认。
 
 前台 JSON 路由只输出基础快照与修正合并后的映射，不输出管理员、备注或修改记录。匿名角色仅获得 `/tools/char` 及其子路径的 GET 权限，所有管理接口均在 Console API 下，并强制检查 `super-role`。升级前可在后台导出字库和修正记录备份。
+
+前台的外观按钮与主站、私厨共用三态轮换：浅色 → 深色 → 跟随系统；图标分别为太阳、月亮和日月组合。右上角「字库管理」由服务端检查超级管理员角色后显示。编辑候选和新增原字支持字符、`U+4E00`、`0x4E00` 或 `4E00` 形式的十六进制码，并显示字形及 Unicode 编码。
 
 Halo 集成代码遵循 `halo-plugin/LICENSE` 中的 GPL-3.0；CHAR 字库和转换器保留原 CC BY-SA 4.0 许可，安装包同时包含两份许可和署名。

@@ -1,6 +1,8 @@
 (() => {
     const key = 'lemonslice-color-mode';
     const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const order = ['light', 'dark', 'system'];
+    const labels = {system: '跟随系统', light: '浅色', dark: '深色'};
     let mode = 'system';
     try {
         const saved = localStorage.getItem(key);
@@ -12,33 +14,29 @@
         document.documentElement.dataset.colorScheme = scheme;
         document.documentElement.style.colorScheme = scheme;
         document.querySelector('meta[name="theme-color"]').content = scheme === 'dark' ? '#15171b' : '#ffffff';
-        document.querySelectorAll('[data-appearance]').forEach(button => {
-            button.setAttribute('aria-pressed', String(button.dataset.appearance === mode));
-        });
+        document.querySelectorAll('[data-color-mode-icon]').forEach(icon => { icon.toggleAttribute('hidden', icon.dataset.colorModeIcon !== mode); });
+        const toggle = document.getElementById('appearanceToggle');
+        if (toggle) {
+            const next = order[(order.indexOf(mode) + 1) % order.length];
+            toggle.title = `外观：${labels[mode]}${mode === 'system' ? `（当前${labels[scheme]}）` : ''}`;
+            toggle.setAttribute('aria-label', `外观模式：${labels[mode]}，点击切换为${labels[next]}`);
+        }
     }
     apply();
     media.addEventListener('change', apply);
     window.addEventListener('storage', event => {
-        if (event.key === key) {
-            mode = ['light', 'dark', 'system'].includes(event.newValue) ? event.newValue : 'system';
+        if (event.key === key || event.key === null) {
+            try { mode = localStorage.getItem(key); } catch (_) { mode = 'system'; }
+            if (!order.includes(mode)) mode = 'system';
             apply();
         }
     });
     document.addEventListener('DOMContentLoaded', () => {
         apply();
-        document.querySelectorAll('[data-appearance]').forEach(button => {
-            button.addEventListener('click', () => {
-                mode = button.dataset.appearance;
-                try { localStorage.setItem(key, mode); } catch (_) { /* Keep the in-memory setting. */ }
-                apply();
-                document.querySelector('.appearance').open = false;
-            });
-        });
-        document.addEventListener('click', event => {
-            if (!event.target.closest('.appearance')) document.querySelector('.appearance').open = false;
-        });
-        document.addEventListener('keydown', event => {
-            if (event.key === 'Escape') document.querySelector('.appearance').open = false;
+        document.getElementById('appearanceToggle').addEventListener('click', () => {
+            mode = order[(order.indexOf(mode) + 1) % order.length];
+            try { localStorage.setItem(key, mode); } catch (_) { /* Keep the in-memory setting. */ }
+            apply();
         });
     });
 })();

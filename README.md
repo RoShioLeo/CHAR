@@ -1,201 +1,81 @@
-![Image](https://raw.githubusercontent.com/yukiyuqichen/CHAR/main/img/icon.png)
+# CHAR · 字形转换
 
-<p align="center">
-<a href="https://pypi.org/project/char-converter">
-    <img src="https://img.shields.io/pypi/v/char-converter.svg" /></a>
-<a href="https://www.npmjs.com/package/char_converter">
-    <img src="https://img.shields.io/npm/v/char_converter.svg" /></a>
-<a href="https://creativecommons.org/licenses/by-sa/4.0/">
-    <img src="https://img.shields.io/badge/License-CC%20BY--SA%204.0-green.svg" /></a>
-<a href="https://colab.research.google.com/github/yukiyuqichen/CHAR/blob/main/test/test.ipynb">
-    <img src="https://colab.research.google.com/assets/colab-badge.svg" /></a>
-</p>
+<img src="img/lemon.svg" width="64" alt="LemonSlice">
 
+用于 Halo 的完整字形转换插件，包含公开转换页面、字库及超级管理员后台管理。基于 [yukiyuqichen/CHAR](https://github.com/yukiyuqichen/CHAR)，保留并维护 RoShioLeo 的字形修正。
 
-<p align="center">
-<big><strong>Chinese Character Variant Converter,</strong></big>
-</p>
-<p align="center">
-<strong>an open-source library for converting Chinese character variants to standard simplified or traditional characters.</strong>
-</p>
-<p align="center">
-* About the project's name and logo: "CHAR" comes from "Chinese character variant" and also refers to a type of beautiful fish with a gradient of red color (Arctic Char).
-</p>
+[在线使用](https://www.lemonslice.cloud/tools/char/) · [下载插件](https://github.com/RoShioLeo/CHAR/releases) · [维护说明](docs/MAINTENANCE.md) · [上游项目](https://github.com/yukiyuqichen/CHAR)
 
-# Online Demo
-<p align="center">
-  <a href="https://www.lemonslice.cloud/tools/char/">字形转换</a>
-</p>
+## 功能
 
-<p align="center">
-<img src="https://raw.githubusercontent.com/yukiyuqichen/CHAR/main/img/demo.png" />
-</p>
+- 异体字转简体、繁体；支持「默认转换」和「多字候选」。
+- 文本转换、结果复制、UTF-8 文本文件转换与下载。
+- 中文界面，外观和交互与 LemonSlice 博客及私厨统一；支持浅色、深色、跟随系统。
+- 超级管理员可在 Halo 后台检索、新增、编辑、停用和恢复映射，导出字库与修正，查看修改记录。
+- 原字和候选字均显示字形与 Unicode 编码；新增原字、编辑候选和检索支持十六进制码输入。
+- 字形修正与发布包中的基础字库独立保存，升级时保留后台修改。
 
+## 安装和入口
 
+面向 **Halo 2.26.0 及以上版本**开发，已在 Halo 2.27.2 上验证。
 
-# News
-2024-11-15: npm package for JavaScript has been released.
+1. 从 [Releases](https://github.com/RoShioLeo/CHAR/releases) 下载 `LemonSlice-CHAR-*.jar`。
+2. 在 Halo 后台的插件管理中安装并启用。
+3. 前台地址为 `/tools/char/`，后台入口为 **工具 → 字库管理**，也可直接访问 `/console/char-dictionary`。
 
+前台可公开使用。字库管理的界面入口和管理 API 均限制为具有 `super-role` 的超级管理员；超级管理员访问前台时，右上角会显示「字库管理」。
 
-# Halo 插件
+安装包已包含转换页面、脚本、图标和字库，安装插件即可使用。
 
-本分支提供完整的 Halo 插件：前台字形转换网页、基础字库，以及仅超级管理员可用的后台字库管理。
+## 字库编辑
 
-在 [Releases](https://github.com/RoShioLeo/CHAR/releases) 下载 `LemonSlice-CHAR-*.jar` 并安装到 Halo 2.26.0 或更高版本。启用后前台地址为 `/tools/char/`，后台入口为「工具 → 字库管理」。后台修正独立保存在 Halo 中，升级会保留修正和修改记录。
+候选字按行填写，第一行用于「默认转换」，多个候选在「多字候选」下展开。可输入实际字符，也可使用以下形式：
 
-维护和上游同步方式见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。CHAR 保留 CC BY-SA 4.0 许可，独立 Halo 集成代码采用 GPL-3.0。
+| 输入 | 字形 | Unicode |
+| --- | --- | --- |
+| `一`、`U+4E00`、`0x4E00`、`4E00` | 一 | U+4E00 |
+| `𠀀`、`U+20000`、`0x20000`、`20000` | 𠀀 | U+20000 |
 
-# Python
+「停用」会使转换保留原字；「恢复」会删除该字的后台修正，重新使用插件基础字库。保存时校验资源版本，如其他操作已经改动字库，须刷新后重新确认。
 
-## Install
-```
-pip install char-converter
-```
+两份字库的后台修正分别保存在 Halo 的 `lemonslice-char-v2s`、`lemonslice-char-v2t` ConfigMap 中，包含候选、停用状态、备注、操作人和修改记录。前台只读取合并后的映射。
 
-## Update
-**Important Note:** We have been checking and updating the data from time to time. Please run the following command to **ensure the package is the latest version** before using it to handle important mateirals every time.
-```
-pip install char-converter -U
-```
+## 上游同步与已有修正
 
-## Usage
-### Convert text
-1. Mode: one2one
-```
-from char_converter import CharConverter
+2026-11-26 同步至上游提交 [`64b2707`](https://github.com/yukiyuqichen/CHAR/commit/64b27076638255e8293827e04f81c070855edfad)。
 
-text = '苟馀情其訫姱㠯练要兮，镸顑頷亦何伤。'
+两份字库各保留 **27 项自定义修正**。冲突项「壹、拾、柒」按维护者确认保留原字，其他上游更新按字形逐项合入。`test/fork-overrides.json` 记录这些修正，并由 JavaScript、Python 和插件测试保护。
 
-converter = CharConverter('v2t')
-converted_text = converter.convert(text)
-# 苟餘情其信姱以練要兮，長顑頷亦何傷。
+后续字库冲突须比较共同基线、本分支和上游，确认后再处理。详细过程见 [维护说明](docs/MAINTENANCE.md)。
 
-converter = CharConverter('v2s')
-converted_text = converter.convert(text)
-# 苟余情其信姱以练要兮，长顑颔亦何伤。
-```
-2. Mode: one2many
-```
-from char_converter import CharConverter
+## 开发和构建
 
-text = '鈡𩄇毓秀'
+- 前台：根目录 `index.html`、`styles.css`、`app.js`、`appearance.js`、`charConverter.js`。
+- 基础字库：`char_converter/data/v2s.json`、`v2t.json`。
+- Halo 插件及后台：`halo-plugin/`。
+- 上游 Python 转换器和 npm 包源码继续保留，便于同步与复用。
 
-converter = CharConverter('v2t')
-converter.set_mode('one2many')
-converted_text = converter.convert(text)
-# 【鍾|鐘】靈毓秀
+使用 Java 21、Node.js 24 构建：
+
+```bash
+./halo-plugin/gradlew -p halo-plugin clean build
 ```
 
-### Convert file
-```
-from char_converter import CharConverter
+Windows 可在 `halo-plugin` 目录执行 `gradlew.bat build`。安装包输出到 `halo-plugin/build/libs/`。
 
-converter = CharConverter('v2s')
-converter.convert_file(input_file, output_file)
-```
+字库与 Unicode 输入检查：
 
-
-
-# HTML
-```
-<script src="https://unpkg.com/char_converter@latest/dist/bundle.js"></script>
-<script>
-  const CharConverterClass = CharConverter.default;
-
-  const converter = new CharConverterClass('v2t', 'offline');
-  converter.setMode('one2many');
-
-  async function testConversion() {
-    const result = await converter.convert('鈡𩄇毓秀');
-    console.log(result);
-  }
-
-  testConversion();
-</script>
+```bash
+python -m unittest discover -s test -p 'test_*.py'
+node --experimental-strip-types --test test/*.test.cjs
 ```
 
+`checks.yml` 在推送和 PR 时执行检查并构建插件；手动运行时填写 `releaseVersion` 可发布安装包。原 GitHub Pages 工作流只保留手动备用发布。
 
+## 来源和许可
 
-# JavaScript
+原 CHAR 项目由 **Yuqi Chen** 开发，贡献者包括 **Hongsu Wang、Yiyi Wang、Fengyi Ji、Kaini Xiong**。数据来源包括 [CBDB](https://projects.iq.harvard.edu/cbdb)、[OpenCC](https://github.com/BYVoid/OpenCC)、[异体字字典](https://dict.variants.moe.edu.tw/)及《通用规范汉字表》，详见上游项目。
 
-## Install
-```
-npm install char_converter
-```
-
-## Update
-**Important Note:** We have been checking and updating the data from time to time. When initializing the converter, two options ("online" and "offline") are both available. If choosing "online", the data will be retrieved directly from the updated online source. If choosing "offline", please run the following command to **ensure the package is the latest version** regularly to check if the data is up-to-date.
-```
-npm install char_converter@latest
-```
-
-## Usage
-### Convert text
-1. Mode: one2one
-```
-const CharConverter = require('char_converter');
-
-const text = '苟馀情其訫姱㠯练要兮，镸顑頷亦何伤。';
-
-const converter = new CharConverter('v2t', source = 'online'); // Variant to Traditional
-converter.setMode('one2one');
-const convertedText = converter.convert(text);
-console.log(convertedText); // 苟餘情其信姱以練要兮，長顑頷亦何傷。
-
-const converter = new CharConverter('v2s', source = 'online'); // Variant to Simplified
-converter.setMode('one2one');
-const convertedText = converter.convert(text);
-console.log(convertedText); // 苟余情其信姱以练要兮，长顑颔亦何伤。
-```
-2. Mode: one2many
-```
-const CharConverter = require('char_converter');
-
-const text = '鈡𩄇毓秀'
-
-const converter = new CharConverter('v2t', source = 'online'); // Variant to Traditional
-converter.setMode('one2many');
-const convertedText = converter.convert(text);
-console.log(convertedText); // 【鍾|鐘】靈毓秀
-```
-
-
-
-# Data source
-
-**[CBDB Project](https://projects.iq.harvard.edu/cbdb)**
-<img src="https://projects.iq.harvard.edu/sites/projects.iq.harvard.edu/files/cbdb/files/logo.png?m=1696407478" width="35">
-
-**[OpenCC](https://github.com/BYVoid/OpenCC)**
-<img src="https://c.disquscdn.com/uploads/users/3634/6167/avatar200.jpg?1660808503" width="25">
-[![image](https://img.shields.io/badge/License-Apache--2.0-green.svg)](http://www.apache.org/licenses/)
-
-**[Dictionary of Variant Chinese Characters](https://dict.variants.moe.edu.tw/)**
-
-**[General Standard Chinese Characters Table](http://www.moe.gov.cn/jyb_sjzl/ziliao/A19/201306/t20130601_186002.html)**
-
-
-# Data filtering
-![Image](https://raw.githubusercontent.com/yukiyuqichen/CHAR/main/img/workflow.png)
-
-
-# Contributors
-
-**Yuqi Chen** (data collection and programming)
-
-**Hongsu Wang** (project manager)
-
-**Yiyi Wang** (proofreading)
-
-**Fengyi Ji** (data collection)
-
-**Kaini Xiong** (proofreading)
-
-
-## License
-
-[![License: CC BY-SA 4.0](https://licensebuttons.net/l/by-sa/4.0/88x31.png)](https://creativecommons.org/licenses/by-sa/4.0/)
-
-
-
-
+- CHAR 字库及转换器保留 [CC BY-SA 4.0](LICENSE)。
+- 独立 Halo 集成代码采用 [GPL-3.0](halo-plugin/LICENSE)。
+- 安装包同时包含两份许可与 [署名说明](NOTICE.md)。

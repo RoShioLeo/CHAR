@@ -21,21 +21,26 @@
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m14 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span>主站</span>
             </a>
-            <details class="appearance">
-                <summary aria-label="外观设置" title="外观设置">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" stroke-linecap="round"/></svg>
-                </summary>
-                <div class="appearance-menu" role="group" aria-label="配色模式">
-                    <button type="button" data-appearance="system">跟随系统</button>
-                    <button type="button" data-appearance="light">浅色模式</button>
-                    <button type="button" data-appearance="dark">深色模式</button>
+            <div class="site-tools">
+                <a id="dictionaryAdmin" class="site-admin-link" href="/console/char-dictionary" target="_blank" rel="noopener noreferrer" hidden>字库管理</a>
+                <div class="appearance">
+                    <button type="button" id="appearanceToggle" class="appearance-toggle" aria-label="外观模式：跟随系统，点击切换为浅色" title="外观：跟随系统">
+                        <svg data-color-mode-icon="system" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1.65 12.75 2.57 12.37M1.65 6.25 2.57 6.63M6.25 1.65 6.63 2.57M12.75 1.65 12.37 2.57"/><path d="M6.32 12.68a4.5 4.5 0 0 1 6.36-6.36"/><path d="M18.22 11.62a5.5 5.5 0 0 1-6.6 6.6 5.5 5.5 0 1 0 6.6-6.6Z"/><path d="M4 20 20 4"/>
+                        </svg>
+                        <svg data-color-mode-icon="light" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" hidden><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
+                        <svg data-color-mode-icon="dark" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20.8 14A9 9 0 0 1 10 3.2 9 9 0 1 0 20.8 14Z"/></svg>
+                    </button>
                 </div>
-            </details>
+            </div>
         </header>
         <main id="main-content">
             <div class="brand">
                 <img src="img/lemon.svg" alt="" width="48" height="48">
-                <h1>字形转换</h1>
+                <div class="brand-copy">
+                    <p class="brand-kicker">CHARACTER CONVERTER</p>
+                    <h1>字形转换</h1>
+                </div>
             </div>
             <div class="controls">
                 <div class="field">

@@ -138,6 +138,12 @@ public class DictionaryService {
     public Mono<State> overrides(String option) { return snapshot(option).map(Snapshot::state); }
 
     public Mono<Saved> change(String option, ChangeRequest request, String actor) {
+        return changeNormalized(option, new ChangeRequest(unicodeInput(request.character()), request.action(),
+            request.candidates() == null ? null : request.candidates().stream().map(DictionaryService::unicodeInput).toList(),
+            request.note(), request.version()), actor);
+    }
+
+    private Mono<Saved> changeNormalized(String option, ChangeRequest request, String actor) {
         validate(request);
         return snapshot(option).flatMap(snapshot -> {
             if (!Objects.equals(request.version(), snapshot.config().getMetadata().getVersion())) {
@@ -184,6 +190,18 @@ public class DictionaryService {
             || request.candidates().size() > 50 || request.candidates().stream().anyMatch(value -> value == null || value.isBlank() || value.codePointCount(0, value.length()) > 16))) {
             throw badRequest("请输入候选字，每行一个，最多 50 个候选");
         }
+    }
+
+    static String unicodeInput(String input) {
+        if (input == null) return null;
+        String value = input.trim();
+        String hex = null;
+        if (value.matches("(?i)^(U\\+|0x)[0-9a-f]{1,6}$")) hex = value.substring(2);
+        else if (value.matches("(?i)^[0-9a-f]{4,6}$")) hex = value;
+        if (hex == null) return value;
+        int code = Integer.parseInt(hex, 16);
+        if (code > Character.MAX_CODE_POINT || (code >= 0xD800 && code <= 0xDFFF)) throw badRequest("请输入有效的 Unicode 码值");
+        return new String(Character.toChars(code));
     }
 
     private static ResponseStatusException badRequest(String message) {

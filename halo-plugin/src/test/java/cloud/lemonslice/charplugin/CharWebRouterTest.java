@@ -12,7 +12,12 @@ class CharWebRouterTest {
     void publicPageServesOnlyAllowlistedAssetsAndEffectiveMappings() {
         var service = mock(DictionaryService.class);
         when(service.dictionary("v2s")).thenReturn(Mono.just(Map.of("圑", List.of("团"))));
-        var client = WebTestClient.bindToRouterFunction(new CharWebRouter(service).charPublicRoutes()).build();
+        var guard = mock(SuperAdminGuard.class);
+        when(guard.requireSuperAdmin()).thenReturn(Mono.error(new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN)));
+        var client = WebTestClient.bindToRouterFunction(new CharWebRouter(service, guard).charPublicRoutes()).build();
+        client.get().uri("/tools/char/access").exchange().expectStatus().isOk().expectHeader().valueEquals("Cache-Control", "no-store").expectBody().jsonPath("$.canManage").isEqualTo(false);
+        when(guard.requireSuperAdmin()).thenReturn(Mono.just("owner"));
+        client.get().uri("/tools/char/access").exchange().expectStatus().isOk().expectBody().jsonPath("$.canManage").isEqualTo(true);
         client.get().uri("/tools/char").exchange().expectStatus().isOk().expectBody(String.class).value(body -> org.junit.jupiter.api.Assertions.assertTrue(body.contains("<base href=\"/tools/char/\">")));
         client.get().uri("/tools/char/").exchange().expectStatus().isOk().expectBody(String.class).value(body -> org.junit.jupiter.api.Assertions.assertTrue(body.contains("默认转换")));
         client.get().uri("/tools/char/styles.css").exchange().expectStatus().isOk().expectHeader().contentType("text/css");

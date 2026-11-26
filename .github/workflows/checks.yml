@@ -1,4 +1,4 @@
-name: Check converter
+name: Build CHAR plugin
 on:
   push:
     branches: [main, dev/blog-tools]
@@ -31,7 +31,7 @@ jobs:
       - name: Check Python mappings
         run: python3 -m unittest discover -s test -p 'test_*.py'
       - name: Check browser mappings
-        run: node --test test/browser.test.cjs
+        run: node --experimental-strip-types --test test/*.test.cjs
       - name: Build and test Halo plugin
         env:
           RELEASE_VERSION: ${{ inputs.releaseVersion }}

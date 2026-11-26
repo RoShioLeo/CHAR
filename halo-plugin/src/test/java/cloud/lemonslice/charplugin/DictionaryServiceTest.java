@@ -109,4 +109,16 @@ class DictionaryServiceTest {
         }
         assertDoesNotThrow(() -> DictionaryService.validate(new DictionaryService.ChangeRequest("𠀀", "override", List.of("一"), "", null)));
     }
+
+    @Test
+    void hexadecimalEditsAreSavedAsActualUnicodeCharacters() {
+        service.change("v2s", new DictionaryService.ChangeRequest("0x20000", "override", List.of("U+4E00", "4e8c"), "Unicode 编辑", null), "owner").block();
+        assertEquals(List.of("一", "二"), service.dictionary("v2s").block().get("𠀀"));
+        assertFalse(service.dictionary("v2s").block().containsKey("0x20000"));
+        assertEquals("一", DictionaryService.unicodeInput("4E00"));
+        assertEquals("A", DictionaryService.unicodeInput("A"));
+        for (String invalid : List.of("U+110000", "U+D800", "0xDFFF")) {
+            assertEquals(400, assertThrows(ResponseStatusException.class, () -> DictionaryService.unicodeInput(invalid)).getStatusCode().value());
+        }
+    }
 }

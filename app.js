@@ -5,6 +5,12 @@ const status = (message, error = false) => {
     element('conversionStatus').dataset.error = String(error);
 };
 
+fetch('access', {credentials: 'same-origin', cache: 'no-store'})
+    .then(response => response.ok ? response.json() : {canManage: false})
+    .then(access => { element('dictionaryAdmin').hidden = access.canManage !== true; })
+    .catch(() => { element('dictionaryAdmin').hidden = true; });
+window.addEventListener('focus', () => converters.clear());
+
 async function currentConverter() {
     const option = element('optionSelect').value;
     if (!converters.has(option)) {
