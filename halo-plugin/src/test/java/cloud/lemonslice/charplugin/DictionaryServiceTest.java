@@ -19,7 +19,7 @@ import run.halo.app.extension.ReactiveExtensionClient;
 
 class DictionaryServiceTest {
     private DictionaryService service;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
     private final Map<String, ConfigMap> database = new HashMap<>();
 
     @BeforeEach
@@ -29,6 +29,7 @@ class DictionaryServiceTest {
         when(client.create(any(ConfigMap.class))).thenAnswer(call -> {
             ConfigMap config = call.getArgument(0);
             config.getMetadata().setVersion(0L);
+            config.getMetadata().setCreationTimestamp(java.time.Instant.parse("2026-11-26T00:00:00Z"));
             database.put(config.getMetadata().getName(), mapper.convertValue(config, ConfigMap.class));
             return Mono.just(config);
         });

@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,7 +30,12 @@ public class DictionaryService {
     private final Map<String, Map<String, List<String>>> bases = new LinkedHashMap<>();
     private final Map<String, Map<String, List<String>>> seeds;
 
-    public DictionaryService(ReactiveExtensionClient client, ObjectMapper mapper) throws IOException {
+    @Autowired
+    public DictionaryService(ReactiveExtensionClient client) throws IOException {
+        this(client, new ObjectMapper());
+    }
+
+    DictionaryService(ReactiveExtensionClient client, ObjectMapper mapper) throws IOException {
         this.client = client;
         this.mapper = mapper;
         var loader = DictionaryService.class.getClassLoader();
@@ -147,7 +154,10 @@ public class DictionaryService {
                 "disable".equals(request.action()), note, actor, now));
             var next = new State(entries, history);
             history.add(new Audit(character, request.action(), before, effective(option, next).get(character), note, actor, now));
-            var config = mapper.convertValue(snapshot.config(), ConfigMap.class);
+            var config = new ConfigMap();
+            var metadata = new Metadata();
+            BeanUtils.copyProperties(snapshot.config().getMetadata(), metadata);
+            config.setMetadata(metadata);
             try { config.setData(new LinkedHashMap<>(Map.of("dictionary", mapper.writeValueAsString(next)))); }
             catch (IOException exception) { return Mono.error(exception); }
             var saved = config.getMetadata().getVersion() == null ? client.create(config) : client.update(config);
