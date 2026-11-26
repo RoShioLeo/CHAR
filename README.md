@@ -37,6 +37,14 @@
 2024-11-15: npm package for JavaScript has been released.
 
 
+# Halo 插件
+
+本分支提供完整的 Halo 插件：前台字形转换网页、基础字库，以及仅超级管理员可用的后台字库管理。
+
+在 [Releases](https://github.com/RoShioLeo/CHAR/releases) 下载 `LemonSlice-CHAR-*.jar` 并安装到 Halo 2.26.0 或更高版本。启用后前台地址为 `/tools/char/`，后台入口为「工具 → 字库管理」。后台修正独立保存在 Halo 中，升级会保留修正和修改记录。
+
+维护和上游同步方式见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。CHAR 保留 CC BY-SA 4.0 许可，独立 Halo 集成代码采用 GPL-3.0。
+
 # Python
 
 ## Install

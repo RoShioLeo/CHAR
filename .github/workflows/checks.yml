@@ -4,6 +4,12 @@ on:
     branches: [main, dev/blog-tools]
   pull_request:
   workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: 'Optional Halo plugin version to release (e.g. 1.0.0)'
+        required: false
+        type: string
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -11,7 +17,53 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Check Python mappings
         run: python3 -m unittest discover -s test -p 'test_*.py'
       - name: Check browser mappings
         run: node --test test/browser.test.cjs
+      - name: Build and test Halo plugin
+        env:
+          RELEASE_VERSION: ${{ inputs.releaseVersion }}
+          CI: 'true'
+        run: |
+          if [ -n "$RELEASE_VERSION" ]; then
+            [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+            bash halo-plugin/gradlew -p halo-plugin clean build -Pversion="$RELEASE_VERSION"
+          else
+            bash halo-plugin/gradlew -p halo-plugin clean build
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lemonslice-char
+          path: halo-plugin/build/libs/*.jar
+  release:
+    if: github.event_name == 'workflow_dispatch' && inputs.releaseVersion != ''
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: lemonslice-char
+          path: dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ inputs.releaseVersion }}
+        run: |
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          tag="char-halo-v$RELEASE_VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/*.jar --clobber
+          else
+            gh release create "$tag" dist/*.jar --target "$GITHUB_SHA" --title "字形转换 Halo $RELEASE_VERSION" --notes "Halo 字形转换插件：中文前台、超级管理员字库管理、独立修正记录和并发版本校验。保留 CHAR 的 CC BY-SA 4.0 许可及贡献者署名。"
+          fi

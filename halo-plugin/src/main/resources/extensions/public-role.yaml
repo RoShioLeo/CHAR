@@ -1,0 +1,9 @@
+apiVersion: v1alpha1
+kind: Role
+metadata:
+  name: lemonslice-char-public
+  labels:
+    rbac.authorization.halo.run/aggregate-to-anonymous: "true"
+rules:
+  - nonResourceURLs: ["/tools/char", "/tools/char/**"]
+    verbs: ["get"]

@@ -1,0 +1,21 @@
+apiVersion: plugin.halo.run/v1alpha1
+kind: Plugin
+metadata:
+  name: lemonslice-char
+spec:
+  enabled: true
+  requires: ">=2.26.0"
+  author:
+    name: RoShioLeo
+    website: https://www.lemonslice.cloud
+  logo: logo.svg
+  homepage: https://www.lemonslice.cloud/tools/char/
+  repo: https://github.com/RoShioLeo/CHAR
+  issues: https://github.com/RoShioLeo/CHAR/issues
+  displayName: 字形转换
+  description: CHAR 字形转换与超级管理员字库管理
+  license:
+    - name: GPL-3.0
+      url: https://www.gnu.org/licenses/gpl-3.0.html
+    - name: CC-BY-SA-4.0 (CHAR)
+      url: https://creativecommons.org/licenses/by-sa/4.0/
